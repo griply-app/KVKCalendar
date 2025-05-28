@@ -626,13 +626,7 @@ extension TimelineView: EventDelegate {
         forceDeselectEvent()
         isChangingEventEnable = true
         
-        var viewFrame = view.frame
-        if viewFrame.width < 50 {
-            viewFrame.size.width = 50
-        }
-        if viewFrame.height < 60 {
-            viewFrame.size.height = 60
-        }
+        let viewFrame = view.frame
         
         let viewTmp: UIView
         if view is EventView {
@@ -682,7 +676,7 @@ extension TimelineView: EventDelegate {
                                      style: style,
                                      frame: CGRect(origin: CGPoint(x: location.x - eventPreviewXOffset,
                                                                    y: location.y - eventPreviewYOffset),
-                                                   size: eventPreviewSize))
+                                                   size: view.bounds.size))
         } else {
             eventPreview = event.isNew ? view : view.snapshotView(afterScreenUpdates: false)
             if let size = eventPreview?.frame.size {
