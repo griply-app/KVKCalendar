@@ -146,6 +146,10 @@ public struct Event {
     public var textColor: UIColor = .white
     public var isAllDay: Bool = false
     public var isContainsFile: Bool = false
+    
+    // disables moving and resizing of events
+    public var isReadOnly = false
+    
     public var data: Any? = nil
     
     public var recurringType: Event.RecurringType = .none

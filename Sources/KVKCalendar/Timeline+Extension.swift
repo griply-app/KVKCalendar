@@ -621,6 +621,8 @@ extension TimelineView: EventDelegate {
     }
     
     func didStartResizeEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
+        guard !event.isReadOnly else { return }
+        
         forceDeselectEvent()
         isChangingEventEnable = true
         
@@ -659,6 +661,8 @@ extension TimelineView: EventDelegate {
     }
     
     func didStartMovingEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
+        guard !event.isReadOnly else { return }
+        
         removeEventResizeView()
         let location = gesture.location(in: scrollView)
         
@@ -737,6 +741,8 @@ extension TimelineView: EventDelegate {
     }
     
     func didChangeMovingEvent(_ event: Event, gesture: UIGestureRecognizer) {
+        guard !event.isReadOnly else { return }
+        
         let location = gesture.location(in: scrollView)
         guard scrollView.frame.width >= (location.x + 20) &&
                 (location.x - 20) >= style.timeline.allLeftOffset else { return }
