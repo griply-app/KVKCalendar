@@ -567,7 +567,7 @@ extension TimelineView: ResizeEventViewDelegate {
             let offset = location.y + (eventResizePreview?.mainYOffset ?? 0) + style.timeline.offsetEvent
             let offsetY = (eventResizePreview?.frame.origin.y ?? 0) - location.y
             let endY = (eventResizePreview?.originalFrameEventView.height ?? 0) + (eventResizePreview?.originalFrameEventView.origin.y ?? 0)
-            guard endY - location.y > 70 else { return }
+            guard endY - location.y > 30 else { return }
             
             showChangingMinute(pointY: offset)
             eventResizePreview?.frame.origin.y = location.y
@@ -575,7 +575,7 @@ extension TimelineView: ResizeEventViewDelegate {
             eventResizePreview?.startTime = movingMinuteLabel.time
         case .bottom:
             let offset = location.y - (eventResizePreview?.mainYOffset ?? 0) + style.timeline.offsetEvent
-            guard (location.y - (eventResizePreview?.frame.origin.y ?? 0)) > 80 else { return }
+            guard (location.y - (eventResizePreview?.frame.origin.y ?? 0)) > 45 else { return }
             
             showChangingMinute(pointY: offset)
             eventResizePreview?.frame.size.height = location.y - (eventResizePreview?.frame.origin.y ?? 0)
@@ -671,7 +671,7 @@ extension TimelineView: EventDelegate {
         eventPreview = nil
         
         if view is EventView {
-            eventPreviewSize = getEventPreviewSize()
+            eventPreviewSize = view.bounds.size
             eventPreview = EventView(event: event,
                                      style: style,
                                      frame: CGRect(origin: CGPoint(x: location.x - eventPreviewXOffset,
