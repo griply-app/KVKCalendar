@@ -32,10 +32,16 @@ protocol TimelineDelegate: AnyObject {
     func didAddNewEvent(_ event: Event, minute: Int, hour: Int, point: CGPoint)
     func didResizeEvent(_ event: Event, startTime: ResizeTime, endTime: ResizeTime)
     func dequeueTimeLabel(_ label: TimelineLabel) -> (current: TimelineLabel, others: [UILabel])?
+    func didStartMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView)
+    func didChangeMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer)
+    func didEndMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer)
 }
 
 extension TimelineDelegate {
     func swipeX(transform: CGAffineTransform, stop: Bool) {}
+    func didStartMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {}
+    func didChangeMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer) {}
+    func didEndMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer) {}
 }
 
 protocol EventDateProtocol: AnyObject {}

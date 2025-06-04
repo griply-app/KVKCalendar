@@ -324,7 +324,7 @@ extension TimelineView {
                                                       prepareEvents: events,
                                                       type: paramaters.type,
                                                       style: style,
-                                                      delegate: delegate),
+                                                      delegate: self),
                                     frame: CGRect(x: 0, y: yPoint, width: bounds.width, height: allDayHeight),
                                     dataSource: dataSource)
         allDayView.tag = tagAllDayEventView
@@ -478,13 +478,12 @@ extension TimelineView {
         if let tmpNewEvent = delegate?.willAddNewEvent(newEvent, minute: time.minute, hour: time.hour, point: point) {
             newEvent = tmpNewEvent
         } else {
-            // no need to add preview of new event
             return
         }
         
         if style.timeline.createNewEventMethod.isMovable
             && gesture.state == .began {
-            eventPreviewSize = getEventPreviewSize()
+            eventPreviewSize = calculateEventPreviewSize(for: newEvent)
         }
         
         if style.timeline.createNewEventMethod.isMovable {
@@ -874,10 +873,238 @@ extension TimelineView: CalendarSettingProtocol {
     }
 }
 
+extension TimelineView: TimelineDelegate {
+    
+    // Forward all TimelineDelegate methods to the external delegate
+    func didDisplayEvents(_ events: [Event], dates: [Date?]) {
+        delegate?.didDisplayEvents(events, dates: dates)
+    }
+    
+    func didSelectEvent(_ event: Event, frame: CGRect?) {
+        delegate?.didSelectEvent(event, frame: frame)
+    }
+    
+    func nextDate() {
+        delegate?.nextDate()
+    }
+    
+    func previousDate() {
+        delegate?.previousDate()
+    }
+    
+    func swipeX(transform: CGAffineTransform, stop: Bool) {
+        delegate?.swipeX(transform: transform, stop: stop)
+    }
+    
+    func didChangeEvent(_ event: Event, minute: Int, hour: Int, point: CGPoint, newDate: Date?) {
+        delegate?.didChangeEvent(event, minute: minute, hour: hour, point: point, newDate: newDate)
+    }
+    
+    func willAddNewEvent(_ event: Event, minute: Int, hour: Int, point: CGPoint) -> Event? {
+        return delegate?.willAddNewEvent(event, minute: minute, hour: hour, point: point)
+    }
+    
+    func didAddNewEvent(_ event: Event, minute: Int, hour: Int, point: CGPoint) {
+        delegate?.didAddNewEvent(event, minute: minute, hour: hour, point: point)
+    }
+    
+    func didResizeEvent(_ event: Event, startTime: ResizeTime, endTime: ResizeTime) {
+        delegate?.didResizeEvent(event, startTime: startTime, endTime: endTime)
+    }
+    
+    func dequeueTimeLabel(_ label: TimelineLabel) -> (current: TimelineLabel, others: [UILabel])? {
+        return delegate?.dequeueTimeLabel(label)
+    }
+}
+
 extension TimelineView: AllDayEventDelegate {
     
     func didSelectAllDayEvent(_ event: Event, frame: CGRect?) {
         delegate?.didSelectEvent(event, frame: frame)
+    }
+    
+    func didStartMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
+        guard !event.isReadOnly else { return }
+        
+        removeEventResizeView()
+        let (timelineLocation, scrollViewLocation) = getGestureLocations(from: gesture)
+        
+        setupShadowView(at: scrollViewLocation)
+        createAllDayEventPreview(for: event, from: view, at: timelineLocation, scrollViewLocation: scrollViewLocation)
+        
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+    
+    func didChangeMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer) {
+        guard !event.isReadOnly else { return }
+        
+        let (timelineLocation, scrollViewLocation) = getGestureLocations(from: gesture)
+        guard isValidDropLocation(scrollViewLocation) else { return }
+        
+        handleAutoScroll(at: scrollViewLocation)
+        updateEventPreviewPosition(timelineLocation: timelineLocation, scrollViewLocation: scrollViewLocation)
+        updateShadowView(at: scrollViewLocation)
+    }
+    
+    func didEndMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer) {
+        cleanup()
+        
+        let (_, scrollViewLocation) = getGestureLocations(from: gesture)
+        guard isValidDropLocation(scrollViewLocation) else {
+            shadowView.removeFromSuperview()
+            return
+        }
+        
+        let convertedEvent = convertAllDayToTimelineEvent(event, at: scrollViewLocation)
+        delegate?.didChangeEvent(convertedEvent.event,
+                                minute: convertedEvent.startTime.minute,
+                                hour: convertedEvent.startTime.hour,
+                                point: convertedEvent.location,
+                                newDate: convertedEvent.newDate)
+        
+        shadowView.removeFromSuperview()
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+    
+    // MARK: - Event Preview Helper Methods
+    
+    private func calculateEventPreviewSize(for event: Event) -> CGSize {
+        let width = (frame.width - leftOffsetWithAdditionalTime) / CGFloat(dates.count)
+        let durationMinutes = Calendar.current.dateComponents([.minute], from: event.start, to: event.end).minute ?? 15
+        let hourHeight = calculatedTimeY + style.timeline.heightTime
+        let height = hourHeight * CGFloat(durationMinutes) / 60.0
+        return CGSize(width: width, height: height)
+    }
+    
+    // MARK: - All-Day Event Drag Helper Methods
+    
+    private func getGestureLocations(from gesture: UIGestureRecognizer) -> (timeline: CGPoint, scrollView: CGPoint) {
+        let timelineLocation = gesture.location(in: self)
+        let scrollViewLocation = convert(timelineLocation, to: scrollView)
+        return (timelineLocation, scrollViewLocation)
+    }
+    
+    private func setupShadowView(at location: CGPoint) {
+        shadowView.removeFromSuperview()
+        if let value = moveShadowView(pointX: location.x) {
+            shadowView.frame = value.frame
+            shadowView.date = value.date
+            scrollView.addSubview(shadowView)
+        }
+    }
+    
+    private func createAllDayEventPreview(for event: Event, from sourceView: UIView, at timelineLocation: CGPoint, scrollViewLocation: CGPoint) {
+        eventPreview?.removeFromSuperview()
+        eventPreview = nil
+        
+        var previewEvent = event
+        previewEvent.isAllDay = false
+        eventPreviewSize = sourceView.bounds.size
+        
+        let xOffset = eventPreviewSize.width * 0.5
+        let yOffset = eventPreviewSize.height * 0.5
+        
+        eventPreview = EventView(event: previewEvent,
+                                style: style,
+                                frame: CGRect(origin: CGPoint(x: timelineLocation.x - xOffset,
+                                                              y: timelineLocation.y - yOffset),
+                                              size: eventPreviewSize))
+        
+        eventPreview?.alpha = 0.9
+        eventPreview?.tag = tagEventPagePreview
+        eventPreview?.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+        
+        if let eventTemp = eventPreview {
+            addSubview(eventTemp)
+            let offset = yOffset - style.timeline.offsetEvent - 6
+            showChangingMinute(pointY: scrollViewLocation.y, offset: offset)
+            UIView.animate(withDuration: 0.3) {
+                self.eventPreview?.transform = CGAffineTransform(scaleX: 1, y: 1)
+            }
+        }
+    }
+    
+    private func isValidDropLocation(_ location: CGPoint) -> Bool {
+        return scrollView.frame.width >= (location.x + 20) &&
+               (location.x - 20) >= style.timeline.allLeftOffset
+    }
+    
+    private func handleAutoScroll(at location: CGPoint) {
+        var offset = contentOffset
+        if (location.y - 80) < scrollView.contentOffset.y, (location.y - eventPreviewSize.height) >= 0 {
+            offset.y -= 5
+            contentOffset = offset
+        } else if (location.y + 80) > (contentOffset.y + scrollView.bounds.height), location.y + eventPreviewSize.height <= scrollView.contentSize.height {
+            offset.y += 5
+            contentOffset = offset
+        }
+    }
+    
+    private func updateEventPreviewPosition(timelineLocation: CGPoint, scrollViewLocation: CGPoint) {
+        let xOffset = eventPreviewSize.width * 0.5
+        let yOffset = eventPreviewSize.height * 0.5
+        eventPreview?.frame.origin = CGPoint(x: timelineLocation.x - xOffset, y: timelineLocation.y - yOffset)
+        
+        let offsetMinutes = yOffset - style.timeline.offsetEvent - 6
+        showChangingMinute(pointY: scrollViewLocation.y, offset: offsetMinutes)
+    }
+    
+    private func updateShadowView(at location: CGPoint) {
+        if let value = moveShadowView(pointX: location.x) {
+            shadowView.frame = value.frame
+            shadowView.date = value.date
+        }
+    }
+    
+    private func cleanup() {
+        eventPreview?.removeFromSuperview()
+        eventPreview = nil
+        movingMinuteLabel.removeFromSuperview()
+    }
+    
+    private struct ConvertedEvent {
+        let event: Event
+        let startTime: TimeContainer
+        let location: CGPoint
+        let newDate: Date?
+    }
+    
+    private func convertAllDayToTimelineEvent(_ event: Event, at scrollViewLocation: CGPoint) -> ConvertedEvent {
+        var location = scrollViewLocation
+        location.y = (location.y - (eventPreviewSize.height * 0.5)) - style.timeline.offsetEvent - 6
+        let startTime = movingMinuteLabel.time
+        
+        var newDateEvent: Date?
+        var updatedEvent = event
+        updatedEvent.isAllDay = false
+        
+        let targetDate: Date
+        if paramaters.type == .week, let shadowDate = shadowView.date {
+            newDateEvent = shadowDate
+            targetDate = shadowDate
+            
+            if event.recurringType != .none {
+                updatedEvent = event.updateDate(newDate: shadowDate, calendar: style.calendar) ?? event
+                updatedEvent.isAllDay = false
+            }
+        } else {
+            targetDate = selectedDate
+        }
+        
+        var startDateComponents = style.calendar.dateComponents([.year, .month, .day], from: targetDate)
+        startDateComponents.hour = startTime.hour
+        startDateComponents.minute = startTime.minute
+        
+        if let newStartDate = style.calendar.date(from: startDateComponents) {
+            updatedEvent.start = newStartDate
+            updatedEvent.end = style.calendar.date(
+                byAdding: .minute,
+                value: style.event.newEventStep,
+                to: newStartDate
+            ) ?? newStartDate
+        }
+        
+        return ConvertedEvent(event: updatedEvent, startTime: startTime, location: location, newDate: newDateEvent)
     }
     
 }

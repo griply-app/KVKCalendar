@@ -182,6 +182,18 @@ extension AllDayView: AllDayEventDelegate {
         params.delegate?.didSelectEvent(event, frame: frame)
     }
     
+    func didStartMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
+        params.delegate?.didStartMovingAllDayEvent(event, gesture: gesture, view: view)
+    }
+    
+    func didChangeMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer) {
+        params.delegate?.didChangeMovingAllDayEvent(event, gesture: gesture)
+    }
+    
+    func didEndMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer) {
+        params.delegate?.didEndMovingAllDayEvent(event, gesture: gesture)
+    }
+    
 }
 
 extension AllDayView: CalendarSettingProtocol {

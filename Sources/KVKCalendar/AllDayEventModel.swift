@@ -27,6 +27,9 @@ extension AllDayEvent: EventProtocol {
 protocol AllDayEventDelegate: AnyObject {
     
     func didSelectAllDayEvent(_ event: Event, frame: CGRect?)
+    func didStartMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView)
+    func didChangeMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer)
+    func didEndMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer)
     
 }
 

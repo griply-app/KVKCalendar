@@ -22,6 +22,12 @@ final class AllDayEventView: UIView {
     private let event: Event
     private var isSelected = false
     
+    private lazy var longPressGestureRecognizer: UILongPressGestureRecognizer = {
+        let gesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
+        gesture.minimumPressDuration = 0.5
+        return gesture
+    }()
+    
     init(style: AllDayStyle, event: Event, frame: CGRect) {
         self.event = event
         super.init(frame: frame)
@@ -43,6 +49,10 @@ final class AllDayEventView: UIView {
         tag = event.hash
         let tap = UITapGestureRecognizer(target: self, action: #selector(tapOnEvent))
         addGestureRecognizer(tap)
+        addGestureRecognizer(longPressGestureRecognizer)
+        
+        // Allow both gestures to work together
+        tap.require(toFail: longPressGestureRecognizer)
         
         if #available(iOS 13.4, *) {
             addPointInteraction()
@@ -55,6 +65,23 @@ final class AllDayEventView: UIView {
     
     @objc private func tapOnEvent(gesture: UITapGestureRecognizer) {
         delegate?.didSelectAllDayEvent(event, frame: gesture.view?.frame)
+    }
+    
+    @objc private func handleLongPress(gesture: UILongPressGestureRecognizer) {
+        guard !event.isReadOnly else { return }
+        
+        switch gesture.state {
+        case .began:
+            alpha = 0.7
+            delegate?.didStartMovingAllDayEvent(event, gesture: gesture, view: self)
+        case .changed:
+            delegate?.didChangeMovingAllDayEvent(event, gesture: gesture)
+        case .cancelled, .ended, .failed:
+            alpha = 1.0
+            delegate?.didEndMovingAllDayEvent(event, gesture: gesture)
+        default:
+            break
+        }
     }
     
     func selectEvent() {
