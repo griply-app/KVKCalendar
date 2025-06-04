@@ -35,6 +35,7 @@ final class YearView: UIView {
     }
     
     func setDate(_ date: Date, animated: Bool) {
+        guard Calendar.current.compare(data.date, to: date, toGranularity: .day) != .orderedSame else { return }
         data.date = date
         scrollToDate(date: date, animated: animated)
         collectionView?.reloadData()

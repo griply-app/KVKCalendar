@@ -97,6 +97,8 @@ open class ListView: UIView, CalendarSettingProtocol {
     }
     
     func setDate(_ date: Date, animated: Bool) {
+        guard Calendar.current.compare(params.data.date, to: date, toGranularity: .day) != .orderedSame else { return }
+        
         params.data.date = date
         
         guard !params.data.isSkeletonVisible else { return }

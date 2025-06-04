@@ -56,6 +56,7 @@ final class WeekView: UIView {
     }
     
     func setDate(_ date: Date, animated: Bool) {
+        guard Calendar.current.compare(parameters.data.date, to: date, toGranularity: .day) != .orderedSame else { return }
         parameters.data.date = date
         scrollableWeekView.setDate(date)
         parameters.visibleDates = getVisibleDatesFor(date: date)

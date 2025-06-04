@@ -41,6 +41,7 @@ final class MonthView: UIView {
     }
     
     func setDate(_ date: Date, animated: Bool = false) {
+        guard Calendar.current.compare(parameters.monthData.date, to: date, toGranularity: .day) != .orderedSame else { return }
         updateHeaderView(date, frame: headerViewFrame)
         parameters.monthData.date = date
         parameters.monthData.selectedDates.removeAll()
