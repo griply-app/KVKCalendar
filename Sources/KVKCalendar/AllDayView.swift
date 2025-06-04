@@ -33,6 +33,9 @@ final class AllDayView: UIView {
         return label
     }()
     
+    private let bottomLineHeight: CGFloat = 2
+    private let bottomLineView = UIView()
+    
     private let scrollView = UIScrollView()
     private let linePoints: [CGPoint]
     private var params: Parameters
@@ -94,7 +97,7 @@ final class AllDayView: UIView {
                 
         let x = titleLabel.frame.width + titleLabel.frame.origin.x
         let scrollFrame = CGRect(origin: CGPoint(x: x, y: 0),
-                                 size: CGSize(width: bounds.size.width - x, height: bounds.size.height))
+                                 size: CGSize(width: bounds.size.width - x, height: bounds.size.height - self.bottomLineHeight))
         
         let maxItems = CGFloat(items.max(by: { $0.count < $1.count })?.count ?? 0)
         scrollView.frame = scrollFrame
@@ -118,6 +121,15 @@ final class AllDayView: UIView {
             addSubview(titleLabel)
         }
         addSubview(scrollView)
+        
+        addSubview(bottomLineView)
+        bottomLineView.backgroundColor = params.style.allDay.bottomLineColor
+        bottomLineView.frame = CGRect(
+            x: 0,
+            y: bounds.height - self.bottomLineHeight,
+            width: bounds.width,
+            height: self.bottomLineHeight
+        )
     }
     
     private func createEventViews() {

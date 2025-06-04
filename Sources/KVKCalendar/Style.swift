@@ -618,6 +618,7 @@ public struct YearStyle {
 
 public struct AllDayStyle {
     public var backgroundColor: UIColor = gainsboro
+    public var bottomLineColor: UIColor = .gray
     public var titleText: String = "all-day"
     public var titleColor: UIColor = .black
     public var titleAlignment: NSTextAlignment = .center

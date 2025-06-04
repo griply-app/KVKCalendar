@@ -300,7 +300,7 @@ extension ScrollableWeekView: CalendarSettingProtocol {
         let left = bottomLineView.leftAnchor.constraint(equalTo: leftAnchor)
         let right = bottomLineView.rightAnchor.constraint(equalTo: rightAnchor)
         let bottom = bottomLineView.bottomAnchor.constraint(equalTo: bottomAnchor)
-        let height = bottomLineView.heightAnchor.constraint(equalToConstant: 0.5)
+        let height = bottomLineView.heightAnchor.constraint(equalToConstant: 1)
         NSLayoutConstraint.activate([left, right, bottom, height])
     }
     
