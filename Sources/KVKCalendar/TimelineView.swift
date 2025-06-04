@@ -128,7 +128,7 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
             addGestureRecognizer(longTapGestureRecognizer)
         }
         
-        if style.timeline.scale != nil {
+        if style.timeline.scale != nil && style.timeline.scale?.min != style.timeline.scale?.max {
             let pinch = UIPinchGestureRecognizer(target: self, action: #selector(pinchZooming))
             addGestureRecognizer(pinch)
         }
