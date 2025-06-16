@@ -429,9 +429,6 @@ extension TimelineView {
             return eventView
         } else {
             let eventView = EventView(event: event, style: style, frame: frame)
-            if #available(iOS 14.0, *), let item = dataSource?.willDisplayEventOptionMenu(event, type: paramaters.type) {
-                eventView.addOptionMenu(item.menu, customButton: item.customButton)
-            }
             return eventView
         }
     }
@@ -610,16 +607,16 @@ extension TimelineView: EventDelegate {
         eventPreviewSize.height * 0.7
     }
     
-    func deselectEvent(_ event: Event) {
+    public func deselectEvent(_ event: Event) {
         deselectEvent?(event)
     }
     
-    func didSelectEvent(_ event: Event, gesture: UITapGestureRecognizer) {
+    public func didSelectEvent(_ event: Event, gesture: UITapGestureRecognizer) {
         forceDeselectEvent()
         delegate?.didSelectEvent(event, frame: gesture.view?.frame)
     }
     
-    func didStartResizeEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
+    public func didStartResizeEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
         guard !event.isReadOnly else { return }
         
         forceDeselectEvent()
@@ -628,8 +625,8 @@ extension TimelineView: EventDelegate {
         let viewFrame = view.frame
         
         let viewTmp: UIView
-        if view is EventView {
-            let eventView = EventView(event: event, style: style, frame: viewFrame)
+        if let view = view as? EventView {
+            let eventView = view.copyView(event: event, style: style, frame: viewFrame)
             eventView.textView.isHidden = false
             eventView.selectEvent()
             eventView.isUserInteractionEnabled = false
@@ -649,11 +646,11 @@ extension TimelineView: EventDelegate {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
     
-    func didEndResizeEvent(_ event: Event, gesture: UIGestureRecognizer) {
+    public func didEndResizeEvent(_ event: Event, gesture: UIGestureRecognizer) {
         removeEventResizeView()
     }
     
-    func didStartMovingEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
+    public func didStartMovingEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
         guard !event.isReadOnly else { return }
         
         removeEventResizeView()
@@ -700,7 +697,7 @@ extension TimelineView: EventDelegate {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
     
-    func didEndMovingEvent(_ event: Event, gesture: UIGestureRecognizer) {
+    public func didEndMovingEvent(_ event: Event, gesture: UIGestureRecognizer) {
         eventPreview?.removeFromSuperview()
         eventPreview = nil
         movingMinuteLabel.removeFromSuperview()
@@ -733,7 +730,7 @@ extension TimelineView: EventDelegate {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
     
-    func didChangeMovingEvent(_ event: Event, gesture: UIGestureRecognizer) {
+    public func didChangeMovingEvent(_ event: Event, gesture: UIGestureRecognizer) {
         guard !event.isReadOnly else { return }
         
         let location = gesture.location(in: scrollView)

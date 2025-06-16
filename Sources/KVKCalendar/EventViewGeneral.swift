@@ -15,7 +15,7 @@ open class EventViewGeneral: UIView, CalendarTimer {
         case resize, move, none
     }
     
-    weak var delegate: EventDelegate?
+    public weak var delegate: EventDelegate?
     
     private var originalLocation: CGPoint = .zero
     private let states: Set<EventViewState>
@@ -76,7 +76,7 @@ open class EventViewGeneral: UIView, CalendarTimer {
         }
     }
     
-    @objc public func tapOnEvent(gesture: UITapGestureRecognizer) {
+    @objc open func tapOnEvent(gesture: UITapGestureRecognizer) {
         delegate?.didSelectEvent(event, gesture: gesture)
     }
     
@@ -195,7 +195,7 @@ extension EventViewGeneral {
     }
 }
 
-protocol EventDelegate: AnyObject {
+public protocol EventDelegate: AnyObject {
     
     func didStartResizeEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView)
     func didEndResizeEvent(_ event: Event, gesture: UIGestureRecognizer)
