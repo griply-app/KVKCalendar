@@ -11,27 +11,6 @@ import UIKit
 
 open class EventView: EventViewGeneral {
     
-    public var stackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 3
-        stackView.alignment = .top
-        return stackView
-    }()
-        
-    public var textView: UITextView = {
-        let text = UITextView()
-        text.backgroundColor = .clear
-        text.isScrollEnabled = false
-        text.isUserInteractionEnabled = false
-        text.textContainer.lineBreakMode = .byTruncatingTail
-        
-        text.textContainerInset = .zero
-        text.textContainer.lineFragmentPadding = 0
-        
-        return text
-    }()
-    
     public init(
         event: Event,
         style: Style,
@@ -39,19 +18,6 @@ open class EventView: EventViewGeneral {
         padding: UIEdgeInsets = .zero
     ) {
         super.init(style: style, event: event, frame: frame)
-        
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(stackView)
-        NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: topAnchor, constant: padding.top),
-            stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: padding.left),
-            stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -padding.bottom),
-            stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -padding.right)
-        ])
-        
-        textView.font = style.timeline.eventFont
-        textView.text = event.title.timeline
-        stackView.addArrangedSubview(textView)
         
         if #available(iOS 13.4, *) {
             addPointInteraction()
@@ -85,7 +51,8 @@ open class EventView: EventViewGeneral {
     }
     
     open func copyView(event: Event, style: Style, frame: CGRect) -> EventView {
-        fatalError()
+        assertionFailure("Must be implemented in subclass")
+        return self
     }
 }
 

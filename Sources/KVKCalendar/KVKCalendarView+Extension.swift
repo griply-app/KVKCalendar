@@ -281,7 +281,7 @@ extension KVKCalendarView: DisplayDataSource {
         dataSource?.dequeueMonthViewEvents(events, date: date, frame: frame)
     }
     
-    public func dequeueAllDayViewEvent(_ event: Event, date: Date, frame: CGRect) -> UIView? {
+    public func dequeueAllDayViewEvent(_ event: Event, date: Date, frame: CGRect) -> AllDayEventViewProtocol? {
         dataSource?.dequeueAllDayViewEvent(event, date: date, frame: frame)
     }
     

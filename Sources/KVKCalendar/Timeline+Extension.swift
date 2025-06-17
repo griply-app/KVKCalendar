@@ -626,7 +626,6 @@ extension TimelineView: EventDelegate {
         let viewTmp: UIView
         if let view = view as? EventView {
             let eventView = view.copyView(event: event, style: style, frame: viewFrame)
-            eventView.textView.isHidden = false
             eventView.selectEvent()
             eventView.isUserInteractionEnabled = false
             viewTmp = eventView
@@ -918,11 +917,11 @@ extension TimelineView: TimelineDelegate {
 
 extension TimelineView: AllDayEventDelegate {
     
-    func didSelectAllDayEvent(_ event: Event, frame: CGRect?) {
+    public func didSelectAllDayEvent(_ event: Event, frame: CGRect?) {
         delegate?.didSelectEvent(event, frame: frame)
     }
     
-    func didStartMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
+    public func didStartMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
         guard !event.isReadOnly else { return }
         
         removeEventResizeView()
@@ -934,7 +933,7 @@ extension TimelineView: AllDayEventDelegate {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
     
-    func didChangeMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer) {
+    public func didChangeMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer) {
         guard !event.isReadOnly else { return }
         
         let (timelineLocation, scrollViewLocation) = getGestureLocations(from: gesture)
@@ -945,7 +944,7 @@ extension TimelineView: AllDayEventDelegate {
         updateShadowView(at: scrollViewLocation)
     }
     
-    func didEndMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer) {
+    public func didEndMovingAllDayEvent(_ event: Event, gesture: UIGestureRecognizer) {
         cleanup()
         
         let (_, scrollViewLocation) = getGestureLocations(from: gesture)
@@ -1002,12 +1001,15 @@ extension TimelineView: AllDayEventDelegate {
         
         let xOffset = eventPreviewSize.width * 0.5
         let yOffset = eventPreviewSize.height * 0.5
-        
-        eventPreview = EventView(event: previewEvent,
-                                style: style,
-                                frame: CGRect(origin: CGPoint(x: timelineLocation.x - xOffset,
-                                                              y: timelineLocation.y - yOffset),
-                                              size: eventPreviewSize))
+
+        let frame = CGRect(
+            origin: CGPoint(
+                x: timelineLocation.x - xOffset,
+                y: timelineLocation.y - yOffset
+            ),
+            size: eventPreviewSize
+        )
+        eventPreview = dataSource?.createEventView(previewEvent, frame: frame, date: nil) ?? EventView(event: previewEvent, style: style, frame: frame)
         
         eventPreview?.alpha = 0.9
         eventPreview?.tag = tagEventPagePreview

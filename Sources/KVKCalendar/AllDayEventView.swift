@@ -9,7 +9,7 @@
 
 import UIKit
 
-final class AllDayEventView: UIView {
+final class AllDayEventView: UIView, AllDayEventViewProtocol {
     
     weak var delegate: AllDayEventDelegate?
     

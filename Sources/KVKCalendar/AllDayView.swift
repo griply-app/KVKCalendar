@@ -170,13 +170,9 @@ final class AllDayView: UIView {
     }
     
     private func createEventView(event: Event, frame: CGRect) -> UIView {
-        if let customView = dataSource?.dequeueAllDayViewEvent(event, date: event.start, frame: frame) {
-            return customView
-        } else {
-            let eventView = AllDayEventView(style: params.style.allDay, event: event, frame: frame)
-            eventView.delegate = self
-            return eventView
-        }
+        let view: AllDayEventViewProtocol = dataSource?.dequeueAllDayViewEvent(event, date: event.start, frame: frame) ?? AllDayEventView(style: params.style.allDay, event: event, frame: frame)
+        view.delegate = self
+        return view
     }
     
     private func createVerticalLine(pointX: CGFloat) -> VerticalLineView {
