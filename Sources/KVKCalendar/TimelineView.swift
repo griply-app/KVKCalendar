@@ -431,7 +431,7 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
                         if let view = dataSource?.willDisplayEventView(event, frame: rect, date: date) {
                             return view
                         } else {
-                            return EventView(event: event, style: style, frame: rect)
+                            return dataSource?.createEventView(event, frame: rect, date: date) ?? EventView(event: event, style: style, frame: rect)
                         }
                     }()
                     

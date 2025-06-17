@@ -428,8 +428,7 @@ extension TimelineView {
         if let eventView = dataSource?.willDisplayEventView(event, frame: frame, date: date) {
             return eventView
         } else {
-            let eventView = EventView(event: event, style: style, frame: frame)
-            return eventView
+            return dataSource?.createEventView(event, frame: frame, date: date) ?? EventView(event: event, style: style, frame: frame)
         }
     }
     
@@ -668,11 +667,14 @@ extension TimelineView: EventDelegate {
         
         if view is EventView {
             eventPreviewSize = view.bounds.size
-            eventPreview = EventView(event: event,
-                                     style: style,
-                                     frame: CGRect(origin: CGPoint(x: location.x - eventPreviewXOffset,
-                                                                   y: location.y - eventPreviewYOffset),
-                                                   size: view.bounds.size))
+            let frame = CGRect(
+                origin: CGPoint(
+                    x: location.x - eventPreviewXOffset,
+                    y: location.y - eventPreviewYOffset
+                ),
+                size: view.bounds.size
+            )
+            eventPreview = dataSource?.createEventView(event, frame: frame, date: nil)
         } else {
             eventPreview = event.isNew ? view : view.snapshotView(afterScreenUpdates: false)
             if let size = eventPreview?.frame.size {

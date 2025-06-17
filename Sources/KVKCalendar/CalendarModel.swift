@@ -408,6 +408,8 @@ public protocol CalendarDataSource: AnyObject {
     /// Use this method to add a custom event view
     func willDisplayEventView(_ event: Event, frame: CGRect, date: Date?) -> EventViewGeneral?
     
+    func createEventView(_ event: Event, frame: CGRect, date: Date?) -> EventViewGeneral?
+    
     /// Use this method to add a custom header subview (works for Day, Week, Month)
     func willDisplayHeaderSubview(date: Date?, frame: CGRect, type: CalendarType) -> UIView?
     

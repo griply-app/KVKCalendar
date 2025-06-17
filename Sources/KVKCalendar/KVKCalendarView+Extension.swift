@@ -251,6 +251,10 @@ extension KVKCalendarView: DisplayDataSource {
         dataSource?.willDisplayCollectionView(frame: frame, type: type)
     }
     
+    public func createEventView(_ event: Event, frame: CGRect, date: Date?) -> EventViewGeneral? {
+        dataSource?.createEventView(event, frame: frame, date: date)
+    }
+    
     public func willDisplayEventView(_ event: Event, frame: CGRect, date: Date?) -> EventViewGeneral? {
         dataSource?.willDisplayEventView(event, frame: frame, date: date)
     }
