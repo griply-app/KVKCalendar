@@ -36,7 +36,6 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
     }
     var eventPreview: UIView?
     var eventResizePreview: ResizeEventView?
-    var originalEventViewBeingResized: UIView?
     lazy var eventPreviewSize: CGSize = {
         getEventPreviewSize()
     }()
