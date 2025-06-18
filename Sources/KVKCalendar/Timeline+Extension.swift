@@ -189,14 +189,33 @@ extension TimelineView {
                let endHour = endTime.hour,
                let startMinute = startTime.minute,
                let endMinute = endTime.minute {
+                
+                // Call delegate to update the event first - this will recreate views with correct size
                 delegate?.didResizeEvent(event,
                                          startTime: ResizeTime(startHour, startMinute),
                                          endTime: ResizeTime(endHour, endMinute))
+                
+                // Delay cleanup to let the refresh complete
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.eventResizePreview?.removeFromSuperview()
+                    self.eventResizePreview = nil
+                    self.originalEventViewBeingResized = nil
+                    self.isChangingEventEnable = false
+                    self.enableAllEvents(enable: true)
+                }
+                return
             }
         }
         
+        // If no changes were made, restore the original event view opacity
+        if let originalView = originalEventViewBeingResized {
+            originalView.alpha = 1.0
+        }
+        
+        // Clean up
         eventResizePreview?.removeFromSuperview()
         eventResizePreview = nil
+        originalEventViewBeingResized = nil
         isChangingEventEnable = false
         enableAllEvents(enable: true)
     }
@@ -622,6 +641,10 @@ extension TimelineView: EventDelegate {
         isChangingEventEnable = true
         
         let viewFrame = view.frame
+        
+        // Store reference to original view and set its opacity to 0.0
+        originalEventViewBeingResized = view
+        view.alpha = 0.0
         
         let viewTmp: UIView
         if let view = view as? EventView {
