@@ -28,9 +28,7 @@ final class ResizeEventView: UIView {
     var endTime: TimeContainer?
     
     private lazy var eventView: UIView = {
-        let view = UIView()
-        view.backgroundColor = event.color?.value ?? event.backgroundColor
-        return view
+        return UIView()
     }()
     
     private lazy var topView = createPanView(type: .top)
