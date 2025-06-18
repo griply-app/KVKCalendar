@@ -452,6 +452,9 @@ extension TimelineView {
     }
     
     @objc func addNewEvent(gesture: UIGestureRecognizer) {
+        // Don't create new events when resizing an existing event
+        guard !isChangingEventEnable else { return }
+        
         var point = gesture.location(in: scrollView)
         let time: TimeContainer
         if style.timeline.createNewEventMethod.isMovable {
