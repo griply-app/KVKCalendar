@@ -229,8 +229,12 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
         return pointY
     }
     
-    private func scrollToCurrentTime(_ startHour: Int) {
-        guard style.timeline.scrollLineHourMode.scrollForDates(dates) && isDisplayedCurrentTime else { return }
+    public func scrollToCurrentTime() {
+        scrollToCurrentTime(style.timeline.startHour, force: true)
+    }
+    
+    private func scrollToCurrentTime(_ startHour: Int, force: Bool = false) {
+        guard (style.timeline.scrollLineHourMode.scrollForDates(dates) && isDisplayedCurrentTime) || force else { return }
         
         let date = Date()
         guard let time = getTimelineLabel(hour: date.kvkHour)else {

@@ -128,6 +128,17 @@ extension KVKCalendarView {
         }
     }
     
+    public func scrollToCurrentTime() {
+        switch parameters.type {
+        case .day:
+            dayView.timelinePage.timelineView?.scrollToCurrentTime()
+        case .week:
+            weekView.timelinePage.timelineView?.scrollToCurrentTime()
+        default:
+            break
+        }
+    }
+    
     // MARK: Private methods
     
     private var calendarQueue: DispatchQueue {
